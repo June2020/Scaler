@@ -20,7 +20,10 @@ def analyze():
     if not file.filename or not _allowed(file.filename):
         return jsonify({"error": "Unsupported file type. Use wav, mp3, m4a, ogg, or aac"}), 400
 
-    suffix = "." + secure_filename(file.filename).rsplit(".", 1)[1]
+    safe_name = secure_filename(file.filename)
+    if "." not in safe_name:
+        return jsonify({"error": "Unsupported file type. Use wav, mp3, m4a, ogg, or aac"}), 400
+    suffix = "." + safe_name.rsplit(".", 1)[1]
     tmp_path = None
     with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
         file.save(tmp.name)
