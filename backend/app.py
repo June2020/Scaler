@@ -1,3 +1,4 @@
+import os
 from flask import Flask
 from routes.audio import audio_bp
 
@@ -16,10 +17,11 @@ def create_app() -> Flask:
 
     @app.errorhandler(500)
     def server_error(e):
+        app.logger.exception(e)
         return {"error": "Internal server error"}, 500
 
     return app
 
 if __name__ == "__main__":
     app = create_app()
-    app.run(debug=True, port=5000)
+    app.run(debug=os.environ.get("FLASK_DEBUG", "false").lower() == "true", port=5000)
