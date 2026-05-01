@@ -32,6 +32,12 @@ def test_analyze_response_has_required_fields(client):
     assert "key" in json_data
     assert "bpm" in json_data
     assert "chords" in json_data
+    chords = json_data["chords"]
+    assert "major" in chords
+    assert "minor" in chords
+    assert "diminished" in chords
+    assert "seventh" in chords
+    assert "sus" in chords
 
 def test_analyze_missing_file_returns_400(client):
     response = client.post("/api/audio/analyze", content_type="multipart/form-data", data={})

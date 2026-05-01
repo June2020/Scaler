@@ -43,4 +43,7 @@ def test_analyze_audio_returns_result(sine_wav_path):
     assert isinstance(result, AnalysisResult)
     assert isinstance(result.key, str)
     assert isinstance(result.bpm, int)
-    assert isinstance(result.chords, list)
+    assert isinstance(result.chords, dict)
+    assert "major" in result.chords
+    assert "minor" in result.chords
+    assert "seventh" in result.chords
