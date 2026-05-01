@@ -7,10 +7,22 @@ PITCH_CLASSES = ["C", "C#", "D", "D#", "E", "F",
                  "F#", "G", "G#", "A", "A#", "B"]
 
 def _bpm_from_audio(y: np.ndarray, sr: int) -> int:
-    tempo, _ = librosa.beat.beat_track(y=y, sr=sr)
-    # tempo may be a 0-d or 1-d numpy array depending on librosa version;
-    # extract the scalar with .item() before converting to avoid DeprecationWarning
-    return int(round(float(np.asarray(tempo).item())))
+    # Isolate percussive component — vocal syllables live in the harmonic layer
+    # and cause beat_track to double/quadruple the true tempo on sung input
+    _, y_percussive = librosa.effects.hpss(y)
+
+    # Median aggregation is more robust to spurious onset spikes than mean
+    onset_env = librosa.onset.onset_strength(
+        y=y_percussive, sr=sr, aggregate=np.median
+    )
+    tempo = librosa.feature.tempo(onset_envelope=onset_env, sr=sr, start_bpm=100)[0]
+    bpm = int(round(float(np.asarray(tempo).item())))
+
+    # Halve if above typical song range — common octave error on vocal input
+    if bpm > 180:
+        bpm = bpm // 2
+
+    return bpm
 
 def _key_from_audio(y: np.ndarray, sr: int) -> str:
     chroma = librosa.feature.chroma_cqt(y=y, sr=sr)
